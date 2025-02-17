@@ -8,24 +8,43 @@
 import UIKit
 
 class TButton: UIButton {
+    
+    private let buttonBackgroundColor: UIColor
 
     override init(frame: CGRect) {
+        buttonBackgroundColor = .tBlack
         super.init(frame: frame)
-        configure()
+        configureUI()
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
-    init(title: String, backgroundColor: UIColor = .tBlack) {
+    init(
+        title: String,
+        target:Any?,
+        action: Selector,
+        isEnabled: Bool = true,
+        backgroundColor: UIColor = .tBlack
+    ) {
+        self.buttonBackgroundColor = backgroundColor
         super.init(frame: .zero)
         self.setTitle(title, for: .normal)
+        self.addTarget(target, action: action, for: .touchUpInside)
         self.backgroundColor = backgroundColor
-        configure()
+        self.alpha = isEnabled ? 1.0 : 0.5
+        self.isEnabled = isEnabled
+        
+        configureUI()
     }
     
-    private func configure() {
+    func set(isEnabled: Bool) {
+        self.isEnabled = isEnabled
+        self.alpha = isEnabled ? 1.0 : 0.5
+    }
+    
+    private func configureUI() {
         layer.cornerRadius = 16
         setTitleColor(.white, for: .normal)
         titleLabel?.font = UIFont.preferredFont(forTextStyle: .headline)

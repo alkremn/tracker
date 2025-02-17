@@ -7,12 +7,24 @@
 
 import UIKit
 
-class CreateEventViewController: UIViewController {
-
+final class CreateEventViewController: UIViewController {
+    
+    private let titleLabel = UILabel(text: "Новое нерегулярное событие")
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        view.backgroundColor = .red
+        configureUI()
     }
-
+    
+    private func configureUI() {
+        navigationItem.hidesBackButton = true
+        view.backgroundColor = .systemBackground
+        view.addSubViews(titleLabel)
+        
+        NSLayoutConstraint.activate([
+            titleLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 27),
+            titleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+        ])
+    }
 }

@@ -7,8 +7,17 @@
 
 import UIKit
 
+protocol TrackersCollectionViewCellDelegate: AnyObject {
+    func addTrackerButtonDidTap(for trackerId: UUID)
+}
+
 final class TrackersCollectionViewCell: UICollectionViewCell {
     static let reuseIdentifier = "TrackersCollectionCell"
+    
+    weak var delegate: TrackersCollectionViewCellDelegate?
+    
+    private var trackerId: UUID?
+    private var isChecked = false
     
     private let emojiLabel: UILabel = {
         let label = UILabel()
@@ -43,7 +52,6 @@ final class TrackersCollectionViewCell: UICollectionViewCell {
     
     private lazy var addButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setImage(UIImage(systemName: "plus"), for: .normal)
         button.layer.cornerRadius = 16
         button.layer.masksToBounds = true
         button.tintColor = .white
@@ -61,13 +69,16 @@ final class TrackersCollectionViewCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func configure(with tracker: Tracker) {
+    func configure(with tracker: Tracker, isCompleted: Bool, daysCount: Int) {
+        self.trackerId = tracker.id
         emojiLabel.text = tracker.icon
         titleLabel.text = tracker.name
         titleLabel.setTextWithLineHeight(tracker.name, lineHeight: 18)
-        durationLabel.text = tracker.schedule
+        durationLabel.text = getDurationText(daysCount: daysCount)
         headerView.backgroundColor = .init(hex: tracker.color)
-        addButton.backgroundColor = .init(hex: tracker.color)
+        addButton.backgroundColor =  isCompleted ? .init(hex: tracker.color, alpha: 0.5) : .init(hex: tracker.color)
+        let config = UIImage.SymbolConfiguration(pointSize: 11, weight: .semibold)
+        addButton.setImage(UIImage(systemName: isCompleted ? "checkmark" : "plus", withConfiguration: config), for: .normal)
     }
     
     private func configureUI() {
@@ -99,6 +110,18 @@ final class TrackersCollectionViewCell: UICollectionViewCell {
     }
     
     @objc private func addButtonDidTap() {
-        print("Button tapped")
+        guard let trackerId else { return }
+        delegate?.addTrackerButtonDidTap(for: trackerId)
+    }
+    
+    private func getDurationText(daysCount: Int) -> String {
+        switch daysCount {
+        case 1:
+            return "\(daysCount) день"
+        case 2...3:
+            return "\(daysCount) дня"
+        default:
+            return "\(daysCount) дней"
+        }
     }
 }

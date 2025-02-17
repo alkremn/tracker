@@ -9,6 +9,14 @@ import UIKit
 
 
 extension UILabel {
+    
+    convenience init(text: String, size: CGFloat = 16) {
+        self.init()
+        self.font = .systemFont(ofSize: size)
+        self.textColor = .text
+        self.text = text
+    }
+    
     func setTextWithLineHeight(_ text: String?, lineHeight: CGFloat) {
         guard let text else { return }
         
