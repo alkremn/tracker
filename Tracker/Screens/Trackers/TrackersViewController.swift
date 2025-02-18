@@ -63,6 +63,7 @@ final class TrackersViewController: UIViewController {
     
     func configureUI() {
         title = "Трекеры"
+        view.backgroundColor = .systemBackground
         navigationController?.navigationBar.prefersLargeTitles = true
         
         navigationItem.leftBarButtonItem = UIBarButtonItem(
