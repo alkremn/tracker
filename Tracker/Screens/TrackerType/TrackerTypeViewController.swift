@@ -8,14 +8,14 @@
 import UIKit
 
 protocol TrackerTypeViewControllerDelegate: AnyObject {
-    func createHabitButtonDidTap(category: TrackerCategory, tracker: Tracker)
+    func createTrackerDidRequest(category: TrackerCategory, tracker: Tracker)
 }
 
 final class TrackerTypeViewController: UIViewController {
     
     weak var delegate: TrackerTypeViewControllerDelegate?
     
-    private let titleLabel = UILabel(text: "Создание трекера")
+    private let titleLabel = UILabel(text: "Создание трекера", weight: .medium)
     private lazy var habitButton = TButton(
         title: "Привычка",
         target: self,
@@ -67,6 +67,9 @@ final class TrackerTypeViewController: UIViewController {
     }
     
     @objc private func eventButtonDidTap() {
+        let createEventVC = CreateEventViewController()
+        createEventVC.delegate = self
+        navigationController?.pushViewController(createEventVC, animated: true)
     }
 }
 
@@ -74,6 +77,14 @@ final class TrackerTypeViewController: UIViewController {
 
 extension TrackerTypeViewController: CreateHabitViewControllerDelegate {
     func createHabitButtonDidTap(category: TrackerCategory, tracker: Tracker) {
-        delegate?.createHabitButtonDidTap(category: category, tracker: tracker)
+        delegate?.createTrackerDidRequest(category: category, tracker: tracker)
+    }
+}
+
+//MARK: - CreateEventViewControllerDelegate
+
+extension TrackerTypeViewController: CreateEventViewControllerDelegate {
+    func createEventButtonDidTap(category: TrackerCategory, tracker: Tracker) {
+        delegate?.createTrackerDidRequest(category: category, tracker: tracker)
     }
 }

@@ -15,7 +15,7 @@ final class CreateCategoryViewController: UIViewController {
     
     weak var delegate: CreateCategoryViewControllerDelegate?
     
-    private let titleLabel = UILabel(text: "Новая категория")
+    private let titleLabel = UILabel(text: "Новая категория", weight: .medium)
     
     private lazy var categoryField: UITextField = {
         let textField = TTextField()

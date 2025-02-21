@@ -7,7 +7,7 @@
 
 import UIKit
 
-class TButton: UIButton {
+final class TButton: UIButton {
     
     private let buttonBackgroundColor: UIColor
 

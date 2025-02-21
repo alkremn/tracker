@@ -16,12 +16,12 @@ final class TrackerCategoryViewController: UIViewController {
     weak var delegate: TrackerCategoryViewControllerDelegate?
     
     private var selectedCategory: TrackerCategory?
-    private let titleLabel = UILabel(text: "Категория")
+    private let titleLabel = UILabel(text: "Категория", weight: .medium)
     
     private lazy var categoriesTableView: UITableView = {
         let tableView = UITableView()
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
-        tableView.layer.cornerRadius = 16
+        tableView.register(CustomTableViewCell.self, forCellReuseIdentifier: CustomTableViewCell.identifier)
+        tableView.separatorStyle = .none
         tableView.dataSource = self
         tableView.delegate = self
         return tableView
@@ -50,10 +50,14 @@ final class TrackerCategoryViewController: UIViewController {
         configureUI()
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        categoriesTableView.reloadData()
+    }
+    
     private func configureUI() {
         navigationItem.hidesBackButton = true
         view.backgroundColor = .systemBackground
-        categoriesTableView.separatorInset = UIEdgeInsets(top: 0, left: 20, bottom: 0, right: 20)
         
         view.addSubViews(titleLabel, categoriesTableView, addCategoryButton)
         
@@ -88,20 +92,21 @@ extension TrackerCategoryViewController: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
+        guard
+            let cell = tableView.dequeueReusableCell(withIdentifier: CustomTableViewCell.identifier, for: indexPath) as? CustomTableViewCell
+        else { return UITableViewCell() }
+        
+        cell.prepareForReuse()
         cell.backgroundColor = .inputBackground
         cell.textLabel?.text = categories[indexPath.row].title
-        cell.clipsToBounds = true
         cell.accessoryType = selectedCategory?.id == categories[indexPath.row].id ? .checkmark : .none
-        
-        if indexPath.row == 0 {
-            cell.layer.cornerRadius = 16
-            cell.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
-        }
+        cell.separator.isHidden = indexPath.row == 0
         
         if indexPath.row == categories.count - 1 {
             cell.layer.cornerRadius = 16
             cell.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
+        } else {
+            cell.layer.cornerRadius = 0
         }
         
         cell.selectionStyle = .none
@@ -129,8 +134,7 @@ extension TrackerCategoryViewController: CreateCategoryViewControllerDelegate {
     func categoryNameDidSelect(name: String) {
         let newCategory = TrackerCategory(title: name, trackers: [])
         MockData.categories.append(newCategory)
-        categories = MockData.categories
-        categoriesTableView.reloadData()
+        categories.append(newCategory)
     }
 }
 

@@ -16,15 +16,15 @@ final class TrackerScheduleViewController: UIViewController {
     weak var delegate: TrackerScheduleViewControllerDelegate?
     
     private var activeDays: [WeekDay]
-    private let titleLabel = UILabel(text: "Расписание")
+    private let titleLabel = UILabel(text: "Расписание", weight: .medium)
     
     private lazy var selectedDaysTableView: UITableView = {
         let tableView = UITableView()
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
         tableView.layer.cornerRadius = 16
+        tableView.separatorStyle = .none
+        tableView.allowsSelection = false
         tableView.dataSource = self
         tableView.delegate = self
-        tableView.allowsSelection = false
         return tableView
     }()
     
@@ -51,7 +51,6 @@ final class TrackerScheduleViewController: UIViewController {
     private func configureUI() {
         navigationItem.hidesBackButton = true
         view.backgroundColor = .systemBackground
-        selectedDaysTableView.separatorInset = UIEdgeInsets(top: 0, left: 20, bottom: 0, right: 20)
         view.addSubViews(titleLabel, selectedDaysTableView, finishButton)
         
         NSLayoutConstraint.activate([
@@ -87,10 +86,16 @@ extension TrackerScheduleViewController: UITableViewDataSource {
         let weekdayInt = indexPath.row + 1
         guard let weekday = WeekDay(rawValue: weekdayInt) else { return UITableViewCell()}
         
-        let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
+        let cell = tableView.dequeueReusableCell(withIdentifier: "cell") ?? UITableViewCell(style: .subtitle, reuseIdentifier: "cell")
         cell.backgroundColor = .inputBackground
         cell.textLabel?.text = weekday.fullName
         cell.accessoryView = createToggleSwitch(tag: weekdayInt, isActive: activeDays.contains(weekday))
+        
+        if indexPath.row < WeekDay.allCases.count - 1 {
+            let line = UIView(frame: CGRect(x: 20, y: cell.bounds.height + 31, width: cell.bounds.width, height: 1))
+            line.backgroundColor = UIColor(hex: "#AEAFB4", alpha: 0.6)
+            cell.addSubview(line)
+        }
         
         return cell
     }

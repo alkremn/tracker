@@ -19,7 +19,7 @@ final class TrackersCollectionViewCell: UICollectionViewCell {
     private var trackerId: UUID?
     private var isChecked = false
     
-    private let emojiLabel: UILabel = {
+    private lazy var emojiLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 12)
         label.backgroundColor = .init(hex: "#ffffff", alpha: 0.3)
@@ -29,7 +29,7 @@ final class TrackersCollectionViewCell: UICollectionViewCell {
         return label
     }()
     
-    private let titleLabel: UILabel = {
+    private lazy var titleLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 12)
         label.textColor = .white
@@ -45,8 +45,9 @@ final class TrackersCollectionViewCell: UICollectionViewCell {
         return view
     }()
     
-    private let durationLabel: UILabel = {
+    private lazy var durationLabel: UILabel = {
         let label = UILabel()
+        label.font = .systemFont(ofSize: 12, weight: .medium)
         return label
     }()
     

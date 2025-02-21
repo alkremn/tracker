@@ -20,6 +20,10 @@ class TabViewController: UITabBarController {
         let statisticsVC = StatisticsViewController()
         statisticsVC.tabBarItem = UITabBarItem(title: "Статистика", image: UIImage(systemName: "hare.fill"), tag: 1)
         
+        let lineView = UIView(frame: CGRect(x: 0, y: 0, width: UIScreen.main.bounds.width, height: 0.5))
+        lineView.backgroundColor = UIColor(hex: "#000000", alpha: 0.3)
+        tabBar.addSubview(lineView)
+        
         viewControllers = [navVC, statisticsVC]
     }
 }

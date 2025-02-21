@@ -12,5 +12,5 @@ struct Tracker {
     let name: String
     let color: String
     let icon: String
-    let schedule: [WeekDay]
+    let schedule: [WeekDay]?
 }

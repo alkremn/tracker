@@ -20,7 +20,7 @@ final class TrackersViewController: UIViewController {
     }
     private let cellsPerRow: CGFloat = 2
     private let cellSpacing: CGFloat = 9
-    private let collectionInserts: UIEdgeInsets = UIEdgeInsets(top: 8, left: 16, bottom: 8, right: 16)
+    private let collectionInsets: UIEdgeInsets = UIEdgeInsets(top: 8, left: 16, bottom: 8, right: 16)
     
     private lazy var datePicker: UIDatePicker = {
         let datePicker = UIDatePicker()
@@ -61,7 +61,7 @@ final class TrackersViewController: UIViewController {
         configureUI()
     }
     
-    func configureUI() {
+    private func configureUI() {
         title = "Трекеры"
         view.backgroundColor = .systemBackground
         navigationController?.navigationBar.prefersLargeTitles = true
@@ -82,12 +82,9 @@ final class TrackersViewController: UIViewController {
         navigationItem.searchController = searchVC
         
         view.addSubViews(trackerCollectionView, emptyImageView, emptyLabel)
-        emptyImageView.isHidden = true
-        emptyLabel.isHidden = true
-        
         
         NSLayoutConstraint.activate([
-            trackerCollectionView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            trackerCollectionView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 8),
             trackerCollectionView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
             trackerCollectionView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
             trackerCollectionView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
@@ -112,20 +109,22 @@ final class TrackersViewController: UIViewController {
         guard let weekday = WeekDay(rawValue: weekdayInt) else { return }
         
         categories = MockData.categories.compactMap { category in
-            let filterTrackers = category.trackers.filter {$0.schedule.contains(weekday) }
+            let filterTrackers = category.trackers.filter {
+                if let schedule = $0.schedule {
+                    return schedule.contains(weekday)
+                } else {
+                    let trackerId = $0.id
+                    return !completedTrackers.contains(where: { $0.id == trackerId })
+                }
+            }
             return filterTrackers.isEmpty ? nil : TrackerCategory(title: category.title, trackers: filterTrackers)
         }
         updateCollectionViewEmptyState()
     }
     
     private func updateCollectionViewEmptyState() {
-        if categories.isEmpty {
-            emptyImageView.isHidden = false
-            emptyLabel.isHidden = false
-        } else {
-            emptyImageView.isHidden = true
-            emptyLabel.isHidden = true
-        }
+        emptyImageView.isHidden = !categories.isEmpty
+        emptyLabel.isHidden = !categories.isEmpty
     }
     
     @objc private func addTrackerDidTap() {
@@ -189,18 +188,22 @@ extension TrackersViewController: UICollectionViewDelegateFlowLayout {
             ofKind: kind,
             withReuseIdentifier: TrackersSectionHeaderView.reuseIdentifier,
             for: indexPath
-        ) as! TrackersSectionHeaderView
+        ) as? TrackersSectionHeaderView
         
-        header.configure(with: categories[indexPath.section].title)
-        return header
+        if let header {
+            header.configure(with: categories[indexPath.section].title)
+            return header
+        }
+        
+        return UICollectionReusableView()
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
-        CGSize(width: collectionView.bounds.width, height: 18)
+        CGSize(width: collectionView.bounds.width, height: 30)
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
-        collectionInserts
+        collectionInsets
     }
     
     func collectionView(
@@ -208,7 +211,7 @@ extension TrackersViewController: UICollectionViewDelegateFlowLayout {
         layout collectionViewLayout: UICollectionViewLayout,
         sizeForItemAt indexPath: IndexPath
     ) -> CGSize {
-        let paddingWidth: CGFloat = collectionInserts.left + collectionInserts.right + (cellsPerRow - 1) * cellSpacing
+        let paddingWidth: CGFloat = collectionInsets.left + collectionInsets.right + (cellsPerRow - 1) * cellSpacing
         let cellWidth = (collectionView.frame.width - paddingWidth) / cellsPerRow
         return CGSize(width: cellWidth, height: 148)
     }
@@ -243,7 +246,7 @@ extension TrackersViewController: TrackersCollectionViewCellDelegate {
 //MARK: - TrackerTypeViewControllerDelegate
 
 extension TrackersViewController: TrackerTypeViewControllerDelegate {
-    func createHabitButtonDidTap(category: TrackerCategory, tracker: Tracker) {
+    func createTrackerDidRequest(category: TrackerCategory, tracker: Tracker) {
         var trackers = category.trackers
         trackers.append(tracker)
         

@@ -19,7 +19,7 @@ final class CreateHabitViewController: UIViewController {
     
     weak var delegate: CreateHabitViewControllerDelegate?
     
-    private let titleLabel = UILabel(text: "Новая привычка")
+    private let titleLabel = UILabel(text: "Новая привычка", weight: .medium)
     
     private lazy var titleField: UITextField = {
         let textField = TTextField()
@@ -34,8 +34,10 @@ final class CreateHabitViewController: UIViewController {
     private lazy var optionsTableView: UITableView = {
         let tableView = UITableView()
         tableView.layer.cornerRadius = 16
+        tableView.register(CustomTableViewCell.self, forCellReuseIdentifier: "CustomCell")
         tableView.dataSource = self
         tableView.delegate = self
+        tableView.separatorStyle = .none
         return tableView
     }()
     
@@ -75,10 +77,10 @@ final class CreateHabitViewController: UIViewController {
     
     private var selectedCategory: TrackerCategory?
     private var activeDays: [WeekDay] = []
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         configureUI()
         createDismissKeyboardTapGesture()
     }
@@ -87,8 +89,6 @@ final class CreateHabitViewController: UIViewController {
         navigationItem.hidesBackButton = true
         view.backgroundColor = .systemBackground
         view.addSubViews(titleLabel, titleField, optionsTableView, buttonsStack)
-        
-        optionsTableView.separatorInset = UIEdgeInsets(top: 0, left: 15, bottom: 0, right: 15)
         
         NSLayoutConstraint.activate([
             titleLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 27),
@@ -121,17 +121,16 @@ final class CreateHabitViewController: UIViewController {
     }
     
     @objc private func titleFieldDidChange() {
-        createButton.set(isEnabled: isFormValid())
+        createButton.set(isEnabled: isFormValid)
     }
     
     @objc private func cancelButtonDidTap() {
         dismiss(animated: true)
     }
-
+    
     @objc private func createButtonDidTap() {
-        guard
-            let title = titleField.text,
-            let selectedCategory else
+        guard let title = titleField.text,
+              let selectedCategory else
         { return }
         
         let newTracker = Tracker(name: title, color: "", icon: "", schedule: activeDays)
@@ -139,7 +138,7 @@ final class CreateHabitViewController: UIViewController {
         dismiss(animated: true)
     }
     
-    private func isFormValid() -> Bool {
+    private var isFormValid: Bool {
         if let title = titleField.text {
             return !title.isEmpty && selectedCategory != nil && !activeDays.isEmpty
         }
@@ -147,37 +146,50 @@ final class CreateHabitViewController: UIViewController {
     }
 }
 
+//MARK: - UITableViewDataSource
+
 extension CreateHabitViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         options.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "cell") ?? UITableViewCell(style: .subtitle, reuseIdentifier: "cell")
+        guard
+            let cell = tableView.dequeueReusableCell(withIdentifier: CustomTableViewCell.identifier, for: indexPath) as? CustomTableViewCell
+        else { return UITableViewCell() }
+        
         cell.backgroundColor = .inputBackground
         cell.detailTextLabel?.textColor = .tGray
-
+        cell.textLabel?.font = .systemFont(ofSize: 17)
+        cell.detailTextLabel?.font = .systemFont(ofSize: 17)
+        
+        
+        
+        if indexPath.row == 0 {
+            cell.separator.isHidden = true
+        }
+        
         let option = options[indexPath.row]
         switch option {
         case .category:
-            cell.textLabel?.text = "Категория"
-            cell.detailTextLabel?.text = selectedCategory?.title
+            cell.configure(title: "Категория", subtitle: selectedCategory?.title)
         case .schedule:
-            cell.textLabel?.text = "Расписание"
-            cell.detailTextLabel?.text = activeDays.map{ $0.shortName }.joined(separator: ", ")
+            cell.configure(title: "Расписание", subtitle: activeDays.map{ $0.shortName }.joined(separator: ", "))
         }
         
         cell.accessoryType = .disclosureIndicator
+        cell.selectionStyle = .none
         return cell
     }
 }
+
+//MARK: - UITableViewDelegate
 
 extension CreateHabitViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: false)
         
         let selectedOption = options[indexPath.row]
-        
         switch selectedOption {
         case .category:
             let categoryVC = TrackerCategoryViewController(selectedCategory: selectedCategory)
@@ -195,18 +207,22 @@ extension CreateHabitViewController: UITableViewDelegate {
     }
 }
 
+//MARK: - TrackerCategoryViewControllerDelegate
+
 extension CreateHabitViewController: TrackerCategoryViewControllerDelegate {
     func didSelect(category: TrackerCategory?) {
         selectedCategory = category
-        createButton.set(isEnabled: isFormValid())
+        createButton.set(isEnabled: isFormValid)
         optionsTableView.reloadData()
     }
 }
 
+//MARK: - TrackerScheduleViewControllerDelegate
+
 extension CreateHabitViewController: TrackerScheduleViewControllerDelegate {
     func didSelect(_ activeDays: [WeekDay]) {
         self.activeDays = activeDays
-        createButton.set(isEnabled: isFormValid())
+        createButton.set(isEnabled: isFormValid)
         optionsTableView.reloadData()
     }
 }
