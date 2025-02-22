@@ -114,7 +114,8 @@ final class TrackersViewController: UIViewController {
                     return schedule.contains(weekday)
                 } else {
                     let trackerId = $0.id
-                    return !completedTrackers.contains(where: { $0.id == trackerId })
+                    return !completedTrackers.contains(where: { $0.id == trackerId
+                        && !Calendar.current.isDate($0.date, equalTo: currentDate, toGranularity: .day) })
                 }
             }
             return filterTrackers.isEmpty ? nil : TrackerCategory(title: category.title, trackers: filterTrackers)
@@ -164,7 +165,8 @@ extension TrackersViewController: UICollectionViewDataSource {
         
         let tracker = categories[indexPath.section].trackers[indexPath.row]
         let isCompleted = completedTrackers.contains {
-            $0.id == tracker.id && Calendar.current.isDate($0.date, equalTo: currentDate, toGranularity: .day) }
+            $0.id == tracker.id && Calendar.current.isDate($0.date, equalTo: currentDate, toGranularity: .day)
+        }
         
         let daysCount = completedTrackers.count { $0.id == tracker.id }
         cell.configure(with: tracker, isCompleted: isCompleted, daysCount: daysCount)
