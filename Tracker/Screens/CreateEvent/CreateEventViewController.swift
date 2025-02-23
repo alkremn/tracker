@@ -1,0 +1,185 @@
+//
+//  CreateEventViewController.swift
+//  Tracker
+//
+//  Created by Alexey Kremnev on 2/10/25.
+//
+
+import UIKit
+
+protocol CreateEventViewControllerDelegate: AnyObject {
+    func createEventButtonDidTap(category: TrackerCategory, tracker: Tracker)
+}
+
+final class CreateEventViewController: UIViewController {
+    
+    weak var delegate: CreateEventViewControllerDelegate?
+    
+    private let titleLabel = UILabel(text: "Новое нерегулярное событие", weight: .medium)
+    
+    private lazy var titleField: UITextField = {
+        let textField = TTextField()
+        textField.placeholder = "Введите название трекера"
+        textField.backgroundColor = .tLightGray
+        textField.layer.cornerRadius = 16
+        textField.clearButtonMode = .whileEditing
+        textField.addTarget(self, action: #selector(titleFieldDidChange), for: .editingChanged)
+        return textField
+    }()
+    
+    private lazy var optionsTableView: UITableView = {
+        let tableView = UITableView()
+        tableView.register(CustomTableViewCell.self, forCellReuseIdentifier: CustomTableViewCell.identifier)
+        tableView.layer.cornerRadius = 16
+        tableView.dataSource = self
+        tableView.delegate = self
+        tableView.separatorStyle = .none
+        return tableView
+    }()
+    
+    private lazy var cancelButton: UIButton = {
+        let button = UIButton()
+        button.setTitle("Отменить", for: .normal)
+        button.layer.borderColor = UIColor.tRed.cgColor
+        button.layer.borderWidth = 1
+        button.setTitleColor(.tRed, for: .normal)
+        button.layer.cornerRadius = 16
+        button.layer.backgroundColor = UIColor.systemBackground.cgColor
+        button.addTarget(self, action: #selector(cancelButtonDidTap), for: .touchUpInside)
+        return button
+    }()
+    
+    private lazy var createButton = TButton(
+        title: "Создать",
+        target: self,
+        action: #selector(createButtonDidTap),
+        isEnabled: false
+    )
+    
+    private lazy var buttonsStack: UIStackView = {
+        let stack = UIStackView(arrangedSubviews: [
+            cancelButton,
+            createButton
+        ])
+        stack.spacing = 8
+        stack.distribution = .fillEqually
+        return stack
+    }()
+
+    private var selectedCategory: TrackerCategory?
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        configureUI()
+    }
+    
+    private func configureUI() {
+        navigationItem.hidesBackButton = true
+        view.backgroundColor = .systemBackground
+        view.addSubViews(titleLabel, titleField, optionsTableView, buttonsStack)
+        
+        NSLayoutConstraint.activate([
+            titleLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 27),
+            titleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            
+            titleField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            titleField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            titleField.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 38),
+            titleField.heightAnchor.constraint(equalToConstant: 75),
+            
+            optionsTableView.topAnchor.constraint(equalTo: titleField.bottomAnchor, constant: 24),
+            optionsTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            optionsTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            optionsTableView.heightAnchor.constraint(equalToConstant: 150),
+            
+            buttonsStack.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            buttonsStack.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+            buttonsStack.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            buttonsStack.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            
+            cancelButton.heightAnchor.constraint(equalToConstant: 60),
+            createButton.heightAnchor.constraint(equalToConstant: 60)
+        ])
+    }
+    
+    private var isFormValid: Bool {
+        if let title = titleField.text {
+            return !title.isEmpty && selectedCategory != nil
+        }
+        return false
+    }
+    
+    @objc private func titleFieldDidChange() {
+        createButton.set(isEnabled: isFormValid)
+    }
+    
+    @objc private func cancelButtonDidTap() {
+        dismiss(animated: true)
+    }
+
+    @objc private func createButtonDidTap() {
+        guard
+            let title = titleField.text,
+            let selectedCategory else
+        { return }
+        
+        let newTracker = Tracker(name: title, color: "", icon: "", schedule: nil)
+        delegate?.createEventButtonDidTap(category: selectedCategory, tracker: newTracker)
+        dismiss(animated: true)
+    }
+}
+
+//MARK: - UITableViewDataSource
+
+extension CreateEventViewController: UITableViewDataSource {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        1
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        guard
+            let cell = tableView.dequeueReusableCell(withIdentifier: CustomTableViewCell.identifier, for: indexPath) as? CustomTableViewCell
+        else { return UITableViewCell() }
+        
+        cell.backgroundColor = .inputBackground
+        cell.detailTextLabel?.textColor = .tGray
+        cell.textLabel?.font = .systemFont(ofSize: 17)
+        cell.detailTextLabel?.font = .systemFont(ofSize: 17)
+        
+        if indexPath.row == 0 {
+            cell.separator.isHidden = true
+        }
+
+        cell.configure(title: "Категория", subtitle: selectedCategory?.title)
+        cell.accessoryType = .disclosureIndicator
+        cell.selectionStyle = .none
+        return cell
+    }
+}
+
+//MARK: - UITableViewDelegate
+
+extension CreateEventViewController: UITableViewDelegate {
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: false)
+        
+        let categoryVC = TrackerCategoryViewController(selectedCategory: selectedCategory)
+        categoryVC.delegate = self
+        navigationController?.pushViewController(categoryVC, animated: true)
+    }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        75
+    }
+}
+
+//MARK: - TrackerCategoryViewControllerDelegate
+
+extension CreateEventViewController: TrackerCategoryViewControllerDelegate {
+    func didSelect(category: TrackerCategory?) {
+        selectedCategory = category
+        createButton.set(isEnabled: isFormValid)
+        optionsTableView.reloadData()
+    }
+}
