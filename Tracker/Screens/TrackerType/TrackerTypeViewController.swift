@@ -61,30 +61,22 @@ final class TrackerTypeViewController: UIViewController {
     }
     
     @objc private func habitButtonDidTap() {
-        let createHabitVC = CreateHabitViewController()
+        let createHabitVC = CreateTrackerViewController(trackerType: .habit)
         createHabitVC.delegate = self
         navigationController?.pushViewController(createHabitVC, animated: true)
     }
     
     @objc private func eventButtonDidTap() {
-        let createEventVC = CreateEventViewController()
+        let createEventVC = CreateTrackerViewController(trackerType: .event)
         createEventVC.delegate = self
         navigationController?.pushViewController(createEventVC, animated: true)
     }
 }
 
-//MARK: - CreateHabitViewControllerDelegate
+//MARK: - CreateTrackerViewControllerDelegate
 
-extension TrackerTypeViewController: CreateHabitViewControllerDelegate {
-    func createHabitButtonDidTap(category: TrackerCategory, tracker: Tracker) {
-        delegate?.createTrackerDidRequest(category: category, tracker: tracker)
-    }
-}
-
-//MARK: - CreateEventViewControllerDelegate
-
-extension TrackerTypeViewController: CreateEventViewControllerDelegate {
-    func createEventButtonDidTap(category: TrackerCategory, tracker: Tracker) {
+extension TrackerTypeViewController: CreateTrackerViewControllerDelegate {
+    func createTrackerButtonDidTap(category: TrackerCategory, tracker: Tracker) {
         delegate?.createTrackerDidRequest(category: category, tracker: tracker)
     }
 }

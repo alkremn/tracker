@@ -27,4 +27,3 @@ class TabViewController: UITabBarController {
         viewControllers = [navVC, statisticsVC]
     }
 }
-

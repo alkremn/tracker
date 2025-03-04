@@ -36,7 +36,8 @@ final class TrackersViewController: UIViewController {
         collectionView.register(
             TrackersSectionHeaderView.self,
             forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader,
-            withReuseIdentifier: TrackersSectionHeaderView.reuseIdentifier)
+            withReuseIdentifier: TrackersSectionHeaderView.reuseIdentifier
+        )
         
         collectionView.dataSource = self
         collectionView.delegate = self
@@ -57,7 +58,6 @@ final class TrackersViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         configureUI()
     }
     
@@ -145,7 +145,6 @@ final class TrackersViewController: UIViewController {
 //MARK: - UICollectionViewDataSource
 
 extension TrackersViewController: UICollectionViewDataSource {
-    
     func numberOfSections(in collectionView: UICollectionView) -> Int {
         categories.count
     }
@@ -174,7 +173,6 @@ extension TrackersViewController: UICollectionViewDataSource {
         return cell
     }
 }
-
 
 //MARK: - UICollectionViewDelegateFlowLayout
 
