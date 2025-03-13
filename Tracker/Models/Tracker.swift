@@ -5,12 +5,12 @@
 //  Created by Alexey Kremnev on 2/4/25.
 //
 
-import Foundation
+import UIKit
 
 struct Tracker {
-    let id = UUID()
+    let id: UUID
     let name: String
-    let color: String
+    let hexColor: String
     let icon: String
     let schedule: [WeekDay]?
 }

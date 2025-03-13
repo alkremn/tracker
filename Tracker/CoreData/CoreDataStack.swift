@@ -2,7 +2,7 @@
 //  CoreDataStack.swift
 //  Tracker
 //
-//  Created by Alexey Kremnev on 3/1/25.
+//  Created by Alexey Kremnev on 3/4/25.
 //
 
 import Foundation
@@ -11,9 +11,7 @@ import CoreData
 final class CoreDataStack {
     static let shared = CoreDataStack()
     
-    private init() {
-        DaysValueTransformer.register()
-    }
+    private init() {}
     
     lazy var persistentContainer: NSPersistentContainer = {
         let container = NSPersistentContainer(name: "Tracker")

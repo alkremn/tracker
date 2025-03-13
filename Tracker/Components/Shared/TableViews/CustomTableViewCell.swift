@@ -7,6 +7,31 @@
 
 import UIKit
 
+struct CustomTableViewCellModel {
+    let title: String
+    let subtitle: String?
+    let backgroundColor: UIColor
+    let isSeparatorHidden: Bool
+    let accessoryType: UITableViewCell.AccessoryType
+    let selectionStyle: UITableViewCell.SelectionStyle
+    
+    init(
+        title: String,
+        subtitle: String?,
+        backgroundColor: UIColor = .inputBackground,
+        isSeparatorHidden: Bool,
+        accessoryType: UITableViewCell.AccessoryType = .none,
+        selectionStyle: UITableViewCell.SelectionStyle = .none
+    ) {
+        self.title = title
+        self.subtitle = subtitle
+        self.backgroundColor = backgroundColor
+        self.isSeparatorHidden = isSeparatorHidden
+        self.accessoryType = accessoryType
+        self.selectionStyle = selectionStyle
+    }
+}
+
 class CustomTableViewCell: UITableViewCell {
     static let identifier = "CustomCell"
     
@@ -25,8 +50,7 @@ class CustomTableViewCell: UITableViewCell {
     
     private var titleCenterYConstraint: NSLayoutConstraint?
     private var titleTopConstraint: NSLayoutConstraint?
-    
-    let separator = UIView()
+    private let separator = UIView()
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -46,17 +70,23 @@ class CustomTableViewCell: UITableViewCell {
         separator.frame = CGRect(x: 16, y: 0, width: bounds.width - 32, height: 1)
     }
     
-    func configure(title: String, subtitle: String?) {
-        titleLabel.text = title
-        subtitleLabel.text = subtitle
+    func configure(with model: CustomTableViewCellModel) {
+        titleLabel.text = model.title
+        subtitleLabel.text = model.subtitle
         
-        if let subtitle, !subtitle.isEmpty {
+        if let subtitle = model.subtitle, !subtitle.isEmpty {
             titleCenterYConstraint?.isActive = false
             titleTopConstraint?.isActive = true
         } else {
             titleCenterYConstraint?.isActive = true
             titleTopConstraint?.isActive = false
         }
+        
+        backgroundColor = model.backgroundColor
+        accessoryType = model.accessoryType
+        selectionStyle = model.selectionStyle
+        
+        separator.isHidden = model.isSeparatorHidden
     }
     
     private func configureUI() {

@@ -7,10 +7,14 @@
 
 import UIKit
 
+struct EmojiCollectionViewCellModel {
+    let emoji: String
+}
+
 final class EmojiCollectionViewCell: UICollectionViewCell {
     static let reuseIdentifier = "EmojiCollectionCell"
     
-    lazy var emojiLabel: UILabel = {
+    private lazy var emojiLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 32)
         label.layer.cornerRadius = 12
@@ -27,8 +31,18 @@ final class EmojiCollectionViewCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
+    func configure(with model: EmojiCollectionViewCellModel) {
+        emojiLabel.text = model.emoji
+    }
+    
+    func set(isActive: Bool) {
+        backgroundColor = isActive ? UIColor(hex: "#E6E8EB") : .clear
+    }
+    
     private func configureUI() {
         addSubViews(emojiLabel)
+        
+        layer.cornerRadius = 8
         
         NSLayoutConstraint.activate([
             emojiLabel.centerXAnchor.constraint(equalTo: centerXAnchor),

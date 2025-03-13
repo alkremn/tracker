@@ -7,6 +7,10 @@
 
 import UIKit
 
+struct SectionHeaderViewModel {
+    let title: String
+}
+
 final class SectionHeaderView: UICollectionReusableView {
     static let reuseIdentifier = "SectionHeaderView"
     
@@ -18,7 +22,6 @@ final class SectionHeaderView: UICollectionReusableView {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
-        
         configureUI()
     }
 
@@ -26,8 +29,8 @@ final class SectionHeaderView: UICollectionReusableView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func configure(with title: String) {
-        titleLabel.text = title
+    func configure(with model: SectionHeaderViewModel) {
+        titleLabel.text = model.title
     }
     
     private func configureUI() {

@@ -52,3 +52,9 @@ enum WeekDay: Int, CaseIterable, Comparable, Codable {
         lhs.rawValue < rhs.rawValue
     }
 }
+
+extension [WeekDay] {
+    var string: String? {
+        self.map{ "\($0.rawValue)" }.joined(separator: ",")
+    }
+}

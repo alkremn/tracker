@@ -17,11 +17,13 @@ final class TrackerCategoryViewController: UIViewController {
     
     private var selectedCategory: TrackerCategory?
     private let titleLabel = UILabel(text: "Категория", weight: .medium)
-    
+    private lazy var categoryStore = TrackerCategoryStore(delegate: self)
+     
     private lazy var categoriesTableView: UITableView = {
         let tableView = UITableView()
         tableView.register(CustomTableViewCell.self, forCellReuseIdentifier: CustomTableViewCell.identifier)
         tableView.separatorStyle = .none
+        tableView.layer.cornerRadius = 16
         tableView.dataSource = self
         tableView.delegate = self
         return tableView
@@ -32,8 +34,6 @@ final class TrackerCategoryViewController: UIViewController {
         target: self,
         action: #selector(addCategoryButtonDidTap)
     )
-    
-    private var categories = MockData.categories
     
     init(selectedCategory: TrackerCategory?) {
         self.selectedCategory = selectedCategory
@@ -88,7 +88,7 @@ final class TrackerCategoryViewController: UIViewController {
 
 extension TrackerCategoryViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        categories.count
+        categoryStore.numberOfRowsInSection(section)
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -97,19 +97,26 @@ extension TrackerCategoryViewController: UITableViewDataSource {
         else { return UITableViewCell() }
         
         cell.prepareForReuse()
-        cell.backgroundColor = .inputBackground
-        cell.textLabel?.text = categories[indexPath.row].title
-        cell.accessoryType = selectedCategory?.id == categories[indexPath.row].id ? .checkmark : .none
-        cell.separator.isHidden = indexPath.row == 0
         
-        if indexPath.row == categories.count - 1 {
+        let categoryId = categoryStore.trackerCategories[indexPath.row].id
+        
+        let cellModel = CustomTableViewCellModel(
+            title: categoryStore.trackerCategories[indexPath.row].title,
+            subtitle: nil,
+            backgroundColor: .inputBackground,
+            isSeparatorHidden: indexPath.row == 0,
+            accessoryType: selectedCategory?.id == categoryId ? .checkmark : .none
+        )
+        
+        cell.configure(with: cellModel)
+        
+        if indexPath.row == categoryStore.trackerCategories.count - 1 {
             cell.layer.cornerRadius = 16
             cell.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
         } else {
             cell.layer.cornerRadius = 0
         }
         
-        cell.selectionStyle = .none
         return cell
     }
 }
@@ -122,7 +129,7 @@ extension TrackerCategoryViewController: UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let category = categories[indexPath.row]
+        let category = categoryStore.trackerCategories[indexPath.row]
         delegate?.didSelect(category: category)
         navigationController?.popViewController(animated: true)
     }
@@ -132,9 +139,20 @@ extension TrackerCategoryViewController: UITableViewDelegate {
 
 extension TrackerCategoryViewController: CreateCategoryViewControllerDelegate {
     func categoryNameDidSelect(name: String) {
-        let newCategory = TrackerCategory(title: name, trackers: [])
-        MockData.categories.append(newCategory)
-        categories.append(newCategory)
+        let newCategory = TrackerCategory(id: UUID(), title: name, trackers: [])
+        do {
+            try categoryStore.addNewTrackerCategory(category: newCategory)
+        } catch {
+            print(error)
+        }
     }
 }
 
+extension TrackerCategoryViewController: TrackerCategoryStoreDelegate {
+    func didUpdate(_ update: TrackerCategoryStoreUpdate) {
+        categoriesTableView.performBatchUpdates {
+            let insertPaths = update.insertedIndexes.map({ IndexPath(item: $0, section: 0) })
+            categoriesTableView.insertRows(at: insertPaths, with: .automatic)
+        }
+    }
+}

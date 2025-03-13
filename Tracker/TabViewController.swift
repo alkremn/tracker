@@ -12,7 +12,10 @@ class TabViewController: UITabBarController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        let trackersVC = TrackersViewController()
+        let trackersPresenter = TrackersPresenter()
+        let trackersVC = TrackersViewController(presenter: trackersPresenter)
+        trackersPresenter.view = trackersVC
+        
         let navVC = UINavigationController()
         navVC.viewControllers = [trackersVC]
         trackersVC.tabBarItem = UITabBarItem(title: "Трекеры", image: UIImage(systemName: "record.circle.fill"), tag: 0)

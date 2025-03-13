@@ -7,15 +7,22 @@
 
 import UIKit
 
+struct ColorCollectionViewCellModel {
+    let color: UIColor
+    let isSelected: Bool
+}
+
 final class ColorCollectionViewCell: UICollectionViewCell {
     static let reuseIdentifier = "ColorCollectionCell"
     
-    lazy var colorView: UIView = {
+    private lazy var colorView: UIView = {
         let view = UIView()
         view.layer.cornerRadius = 8
         view.layer.masksToBounds = true
         return view
     }()
+    
+    private var color: UIColor?
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -24,6 +31,16 @@ final class ColorCollectionViewCell: UICollectionViewCell {
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    func configure(with model: ColorCollectionViewCellModel) {
+        color = model.color
+        colorView.backgroundColor = model.color
+        layer.borderColor = model.isSelected ? model.color.withAlphaComponent(0.3).cgColor : UIColor.clear.cgColor
+    }
+    
+    func set(isActive: Bool) {
+        layer.borderColor = isActive ? color?.withAlphaComponent(0.3).cgColor : UIColor.clear.cgColor
     }
     
     private func configureUI() {

@@ -7,13 +7,7 @@
 
 import UIKit
 
-protocol TrackerTypeViewControllerDelegate: AnyObject {
-    func createTrackerDidRequest(category: TrackerCategory, tracker: Tracker)
-}
-
 final class TrackerTypeViewController: UIViewController {
-    
-    weak var delegate: TrackerTypeViewControllerDelegate?
     
     private let titleLabel = UILabel(text: "Создание трекера", weight: .medium)
     private lazy var habitButton = TButton(
@@ -36,9 +30,21 @@ final class TrackerTypeViewController: UIViewController {
         return stackView
     }()
     
+    private let completion: () -> Void
+    
+    init(completion: @escaping () -> Void) {
+        self.completion = completion
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    //MARK: - TrackerTypeViewController Lifecycle
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         configureUI()
     }
     
@@ -61,22 +67,16 @@ final class TrackerTypeViewController: UIViewController {
     }
     
     @objc private func habitButtonDidTap() {
-        let createHabitVC = CreateTrackerViewController(trackerType: .habit)
-        createHabitVC.delegate = self
-        navigationController?.pushViewController(createHabitVC, animated: true)
+        let navigationVC = UINavigationController()
+        let createHabitVC = CreateTrackerViewController(trackerType: .habit, completion: completion)
+        navigationVC.viewControllers = [createHabitVC]
+        present(navigationVC, animated: true)
     }
     
     @objc private func eventButtonDidTap() {
-        let createEventVC = CreateTrackerViewController(trackerType: .event)
-        createEventVC.delegate = self
-        navigationController?.pushViewController(createEventVC, animated: true)
-    }
-}
-
-//MARK: - CreateTrackerViewControllerDelegate
-
-extension TrackerTypeViewController: CreateTrackerViewControllerDelegate {
-    func createTrackerButtonDidTap(category: TrackerCategory, tracker: Tracker) {
-        delegate?.createTrackerDidRequest(category: category, tracker: tracker)
+        let navigationVC = UINavigationController()
+        let createEventVC = CreateTrackerViewController(trackerType: .event, completion: completion)
+        navigationVC.viewControllers = [createEventVC]
+        present(navigationVC, animated: true)
     }
 }
