@@ -7,6 +7,15 @@
 
 import UIKit
 
+struct TrackersCollectionViewCellModel {
+    let trackerId: UUID
+    let icon: String
+    let name: String
+    let hexColor: String
+    let isCompleted: Bool
+    let daysCount: Int
+}
+
 protocol TrackersCollectionViewCellDelegate: AnyObject {
     func addTrackerButtonDidTap(for trackerId: UUID)
 }
@@ -62,7 +71,6 @@ final class TrackersCollectionViewCell: UICollectionViewCell {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
-        
         configureUI()
     }
     
@@ -70,16 +78,19 @@ final class TrackersCollectionViewCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func configure(with tracker: Tracker, isCompleted: Bool, daysCount: Int) {
-        self.trackerId = tracker.id
-        emojiLabel.text = tracker.icon
-        titleLabel.text = tracker.name
-        titleLabel.setTextWithLineHeight(tracker.name, lineHeight: 18)
-        durationLabel.text = getDurationText(daysCount: daysCount)
-        headerView.backgroundColor = .init(hex: tracker.color)
-        addButton.backgroundColor =  isCompleted ? .init(hex: tracker.color, alpha: 0.5) : .init(hex: tracker.color)
+    func configure(with model: TrackersCollectionViewCellModel) {
+        trackerId = model.trackerId
+        emojiLabel.text = model.icon
+        titleLabel.text = model.name
+        titleLabel.setTextWithLineHeight(model.name, lineHeight: 18)
+        durationLabel.text = getDurationText(daysCount: model.daysCount)
+        
+        let color = UIColor(hex: model.hexColor) ?? .clear
+        headerView.backgroundColor = color
+        addButton.backgroundColor =  model.isCompleted ? color.withAlphaComponent(0.5) : color
+        
         let config = UIImage.SymbolConfiguration(pointSize: 11, weight: .semibold)
-        addButton.setImage(UIImage(systemName: isCompleted ? "checkmark" : "plus", withConfiguration: config), for: .normal)
+        addButton.setImage(UIImage(systemName: model.isCompleted ? "checkmark" : "plus", withConfiguration: config), for: .normal)
     }
     
     private func configureUI() {
