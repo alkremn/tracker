@@ -5,7 +5,6 @@
 //  Created by Alexey Kremnev on 3/4/25.
 //
 
-import Foundation
 import CoreData
 
 struct TrackerRecordStoreModel {

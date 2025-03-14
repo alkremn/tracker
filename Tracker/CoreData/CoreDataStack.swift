@@ -5,7 +5,6 @@
 //  Created by Alexey Kremnev on 3/4/25.
 //
 
-import Foundation
 import CoreData
 
 final class CoreDataStack {
@@ -17,7 +16,7 @@ final class CoreDataStack {
         let container = NSPersistentContainer(name: "Tracker")
         container.loadPersistentStores { storeDescription, error in
             if let error {
-                fatalError("Unresolved error \(error), \(error.localizedDescription)")
+                assertionFailure("Unresolved error \(error), \(error.localizedDescription)")
             }
         }
         return container

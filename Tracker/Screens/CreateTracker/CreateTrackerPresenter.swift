@@ -30,9 +30,9 @@ enum Options {
 }
 
 final class CreateTrackerPresenter: CreateTrackerPresenterProtocol {
-
+    
     weak var view: CreateTrackerViewControllerProtocol?
-
+    
     var options: [Options] = [ .category ]
     
     let emojis: [String] = [
@@ -65,7 +65,7 @@ final class CreateTrackerPresenter: CreateTrackerPresenterProtocol {
     init(trackerType: TrackerType, completion: @escaping () -> Void) {
         self.trackerType = trackerType
         self.completion = completion
-    
+        
         if self.trackerType == .habit {
             options.append(.schedule)
         }
@@ -98,7 +98,7 @@ final class CreateTrackerPresenter: CreateTrackerPresenterProtocol {
         }
         completion()
     }
-
+    
     func numberOfSections() -> Int {
         1
     }
@@ -160,9 +160,9 @@ final class CreateTrackerPresenter: CreateTrackerPresenterProtocol {
 
 extension CreateTrackerPresenter: TrackerCategoryViewControllerDelegate {
     func didSelect(category: TrackerCategory?) {
-            selectedCategory = category
-            view?.updateCreateButtonState(isEnabled: isFormValid)
-            view?.reloadData()
+        selectedCategory = category
+        view?.updateCreateButtonState(isEnabled: isFormValid)
+        view?.reloadData()
     }
 }
 

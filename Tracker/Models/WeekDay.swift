@@ -8,42 +8,42 @@
 import Foundation
 
 enum WeekDay: Int, CaseIterable, Comparable, Codable {
-   case Monday = 1, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday
+   case monday = 1, tuesday, wednesday, thursday, friday, saturday, sunday
     
     var fullName: String {
         switch self {
-        case .Monday:
+        case .monday:
             return "Понедельник"
-        case .Tuesday:
+        case .tuesday:
             return "Вторник"
-        case .Wednesday:
+        case .wednesday:
             return "Среда"
-        case .Thursday:
+        case .thursday:
             return "Четверг"
-        case .Friday:
+        case .friday:
             return "Пятница"
-        case .Saturday:
+        case .saturday:
             return "Суббота"
-        case .Sunday:
+        case .sunday:
             return "Воскресенье"
         }
     }
     
     var shortName: String {
         switch self {
-        case .Monday:
+        case .monday:
             return "Пн"
-        case .Tuesday:
+        case .tuesday:
             return "Вт"
-        case .Wednesday:
+        case .wednesday:
             return "Ср"
-        case .Thursday:
+        case .thursday:
             return "Чт"
-        case .Friday:
+        case .friday:
             return "Пт"
-        case .Saturday:
+        case .saturday:
             return "Сб"
-        case .Sunday:
+        case .sunday:
             return "Вс"
         }
     }

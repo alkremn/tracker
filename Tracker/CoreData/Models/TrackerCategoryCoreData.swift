@@ -10,7 +10,7 @@ import Foundation
 import CoreData
 
 @objc(TrackerCategoryCoreData)
-public class TrackerCategoryCoreData: NSManagedObject {
+class TrackerCategoryCoreData: NSManagedObject {
     
     @nonobjc public class func createFetchRequest() -> NSFetchRequest<TrackerCategoryCoreData> {
         return NSFetchRequest<TrackerCategoryCoreData>(entityName: "TrackerCategoryCoreData")

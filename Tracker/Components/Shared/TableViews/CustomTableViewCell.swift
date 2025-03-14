@@ -32,7 +32,7 @@ struct CustomTableViewCellModel {
     }
 }
 
-class CustomTableViewCell: UITableViewCell {
+final class CustomTableViewCell: UITableViewCell {
     static let identifier = "CustomCell"
     
     private lazy var titleLabel = {

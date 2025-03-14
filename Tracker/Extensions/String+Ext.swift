@@ -9,6 +9,6 @@ import Foundation
 
 extension String {
     func toWeekDayArray() -> [WeekDay] {
-        self.split(separator: ",").map{ WeekDay(rawValue: Int($0) ?? 1) ?? .Monday }
+        self.split(separator: ",").map{ WeekDay(rawValue: Int($0) ?? 1) ?? .monday }
     }
 }
