@@ -8,7 +8,6 @@
 import Foundation
 
 protocol TrackersPresenterProtocol: AnyObject {
-    var view: TrackersViewControllerProtocol? { get set }
     func viewDidLoad()
     func filterDateChanged(date: Date)
     func numberOfSections() -> Int

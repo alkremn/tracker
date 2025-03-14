@@ -45,7 +45,7 @@ final class TrackerCategoryStore: NSObject {
     
     var trackerCategories: [TrackerCategory] {
         guard let objects = self.fetchResultsController.fetchedObjects else { return [] }
-
+        
         let trackerCategories = objects.map({ self.trackerCategory(from: $0) })
         return trackerCategories
     }
@@ -101,7 +101,7 @@ extension TrackerCategoryStore: NSFetchedResultsControllerDelegate {
         if let insertedIndexes, let deletedIndexes {
             delegate?.didUpdate(.init(insertedIndexes: insertedIndexes, deletedIndexes: deletedIndexes))
         }
-
+        
         insertedIndexes = nil
         deletedIndexes = nil
     }

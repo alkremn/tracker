@@ -7,7 +7,6 @@
 
 import UIKit
 
-
 extension UILabel {
     
     convenience init(text: String, size: CGFloat = 16, weight: UIFont.Weight = .regular) {

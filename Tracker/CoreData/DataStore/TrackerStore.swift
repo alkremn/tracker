@@ -46,7 +46,7 @@ final class TrackerStore: NSObject {
             managedObjectContext: context,
             sectionNameKeyPath: #keyPath(TrackerCoreData.category.title),
             cacheName: nil)
-                
+        
         fetchedResultsController.delegate = self
         
         try? fetchedResultsController.performFetch()
@@ -70,7 +70,7 @@ final class TrackerStore: NSObject {
     func fetchTrackers(on weekDay: Int, date: Date) {
         fetchResultsController.fetchRequest.predicate =
             .init(format: "(%K == nil AND (%K.@count == 0 OR SUBQUERY(%K, $r, $r.date == %@).@count > 0))"
-                            + "OR (%K != nil AND %K CONTAINS %@)",
+                  + "OR (%K != nil AND %K CONTAINS %@)",
                   #keyPath(TrackerCoreData.schedule),
                   #keyPath(TrackerCoreData.records),
                   #keyPath(TrackerCoreData.records),
@@ -150,7 +150,7 @@ extension TrackerStore: NSFetchedResultsControllerDelegate {
     
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<any NSFetchRequestResult>) {
         if let insertedSectionsIndexes, let deletedSectionsIndexes,
-            let insertedRowsIndexes, let deletedRowsIndexes, let updatedRowsIndexes {
+           let insertedRowsIndexes, let deletedRowsIndexes, let updatedRowsIndexes {
             delegate?.didUpdate(
                 .init(
                     insertedSectionsIndexes: insertedSectionsIndexes,
@@ -161,7 +161,7 @@ extension TrackerStore: NSFetchedResultsControllerDelegate {
                 )
             )
         }
-
+        
         insertedSectionsIndexes = nil
         deletedSectionsIndexes = nil
         insertedRowsIndexes = nil
@@ -175,9 +175,9 @@ extension TrackerStore: NSFetchedResultsControllerDelegate {
                     for type: NSFetchedResultsChangeType) {
         switch type {
         case .insert:
-                insertedSectionsIndexes?.insert(sectionIndex)
+            insertedSectionsIndexes?.insert(sectionIndex)
         case .delete:
-                deletedSectionsIndexes?.insert(sectionIndex)
+            deletedSectionsIndexes?.insert(sectionIndex)
         default:
             break
         }
@@ -206,4 +206,3 @@ extension TrackerStore: NSFetchedResultsControllerDelegate {
         }
     }
 }
-

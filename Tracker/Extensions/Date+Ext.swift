@@ -7,7 +7,6 @@
 
 import Foundation
 
-
 extension Date {
     var localDate: Date {
         self.addingTimeInterval(TimeInterval(TimeZone.current.secondsFromGMT()))

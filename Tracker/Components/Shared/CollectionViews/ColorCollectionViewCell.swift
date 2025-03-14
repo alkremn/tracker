@@ -9,7 +9,6 @@ import UIKit
 
 struct ColorCollectionViewCellModel {
     let color: UIColor
-    let isSelected: Bool
 }
 
 final class ColorCollectionViewCell: UICollectionViewCell {
@@ -36,7 +35,7 @@ final class ColorCollectionViewCell: UICollectionViewCell {
     func configure(with model: ColorCollectionViewCellModel) {
         color = model.color
         colorView.backgroundColor = model.color
-        layer.borderColor = model.isSelected ? model.color.withAlphaComponent(0.3).cgColor : UIColor.clear.cgColor
+        layer.borderColor = UIColor.clear.cgColor
     }
     
     func set(isActive: Bool) {

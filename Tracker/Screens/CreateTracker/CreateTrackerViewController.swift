@@ -7,15 +7,15 @@
 
 import UIKit
 
+protocol CreateTrackerViewControllerProtocol: AnyObject {
+    func updateCreateButtonState(isEnabled: Bool)
+    func reloadData()
+}
+
 final class CreateTrackerViewController: UIViewController {
     
-    enum TrackerType {
-        case habit, event
-    }
-    
-    enum Options {
-        case category, schedule
-    }
+    private var presenter: CreateTrackerPresenterProtocol
+    private let trackerType: TrackerType
     
     private let titleLabel = UILabel(text: "", weight: .medium)
     
@@ -113,44 +113,14 @@ final class CreateTrackerViewController: UIViewController {
         return container
     }()
     
-    private var options: [Options] = [ .category ]
-    
-    private let emojis: [String] = [
-        "🙂", "😻", "🌺", "🐶", "❤️", "😱",
-        "😇", "😡", "🥶", "🤔", "🙌", "🍔",
-        "🥦", "🏓", "🥇", "🎸", "🏝", "😪"
-    ]
-    
-    private let colors: [String] = [
-        "#FD4C49", "#FF881E", "#007BFA", "#6E44FE", "#33CF69", "#E66DD4",
-        "#F9D4D4", "#34A7FE", "#46E69D", "#35347C", "#FF674D", "#FF99CC",
-        "#F6C48B", "#7994F5", "#832CF1", "#AD56DA", "#8D72E6", "#2FD058"
-    ]
-    
-    private let trackerType: TrackerType
-
     private let collectionInsets: UIEdgeInsets = UIEdgeInsets(top: 24, left: 0, bottom: 24, right: 0)
     private let cellsPerRow: CGFloat = 6
     private let cellSpacing: CGFloat = 5
     
-    private var trackerStore = TrackerStore()
-    private var selectedCategory: TrackerCategory?
-    private var activeDays: [WeekDay] = []
-    private var selectedEmoji: String?
-    private var selectedColor: String?
-    private let completion: () -> Void
-    
-    init(trackerType: TrackerType, completion: @escaping () -> Void) {
-        try? print(FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false))
-        
-        self.completion = completion
+    init(presenter: CreateTrackerPresenterProtocol, trackerType: TrackerType) {
+        self.presenter = presenter
         self.trackerType = trackerType
-        
         titleLabel.text = self.trackerType == .habit ? "Новая привычка" : "Новое нерегулярное событие"
-        if self.trackerType == .habit {
-            options.append(.schedule)
-        }
-        
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -228,40 +198,15 @@ final class CreateTrackerViewController: UIViewController {
     }
     
     @objc private func titleFieldDidChange() {
-        createButton.set(isEnabled: isFormValid)
+        presenter.titleFieldDidChange(titleText: titleField.text ?? "")
     }
     
     @objc private func cancelButtonDidTap() {
-        completion()
+        presenter.cancelButtonDidTap()
     }
     
     @objc private func createButtonDidTap() {
-        guard let title = titleField.text,
-              let selectedCategory, let selectedColor, let selectedEmoji else
-        { return }
-        
-        let tracker = Tracker(
-            id: UUID(),
-            name: title,
-            hexColor: selectedColor,
-            icon: selectedEmoji,
-            schedule: trackerType == .habit ? activeDays : nil
-        )
-        do {
-            try trackerStore.add(tracker: tracker, categoryId: selectedCategory.id)
-            completion()
-        } catch {
-            print("Unable to create tracker with error: \(error.localizedDescription)")
-        }
-        completion()
-    }
-    
-    private var isFormValid: Bool {
-        if let title = titleField.text {
-            let isValid = !title.isEmpty && selectedCategory != nil && selectedEmoji != nil && selectedColor != nil
-            return trackerType == .habit ? isValid && !activeDays.isEmpty : isValid
-        }
-        return false
+        presenter.createButtonDidTap()
     }
 }
 
@@ -269,44 +214,17 @@ final class CreateTrackerViewController: UIViewController {
 
 extension CreateTrackerViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        options.count
+        presenter.options.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard
-            let cell = tableView.dequeueReusableCell(
-                withIdentifier: CustomTableViewCell.identifier,
-                for: indexPath) as? CustomTableViewCell
+            let cell = tableView.dequeueReusableCell(withIdentifier: CustomTableViewCell.identifier, for: indexPath) as? CustomTableViewCell
         else { return UITableViewCell() }
         
-        let option = options[indexPath.row]
-        switch option {
-        case .category:
-            cell.configure(with: createCustomTableViewCellModel(
-                title: "Категория",
-                subtitle: selectedCategory?.title,
-                isSeparatorHidden: indexPath.row == 0))
-        case .schedule:
-            cell.configure(with: createCustomTableViewCellModel(
-                title: "Расписание",
-                subtitle: activeDays.map{ $0.shortName }.joined(separator: ", "),
-                isSeparatorHidden: indexPath.row == 0))
-        }
-      
+        let cellModel = presenter.cellModel(at: indexPath)
+        cell.configure(with: cellModel)
         return cell
-    }
-    
-    private func createCustomTableViewCellModel(
-        title: String,
-        subtitle: String?,
-        isSeparatorHidden: Bool
-    ) -> CustomTableViewCellModel
-    {
-        CustomTableViewCellModel(
-            title: title,
-            subtitle: subtitle,
-            isSeparatorHidden: isSeparatorHidden,
-            accessoryType: .disclosureIndicator)
     }
 }
 
@@ -315,18 +233,8 @@ extension CreateTrackerViewController: UITableViewDataSource {
 extension CreateTrackerViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: false)
-        
-        let selectedOption = options[indexPath.row]
-        switch selectedOption {
-        case .category:
-            let categoryVC = TrackerCategoryViewController(selectedCategory: selectedCategory)
-            categoryVC.delegate = self
-            navigationController?.pushViewController(categoryVC, animated: true)
-        case .schedule:
-            let scheduleVC = TrackerScheduleViewController(activeDays: activeDays)
-            scheduleVC.delegate = self
-            navigationController?.pushViewController(scheduleVC, animated: true)
-        }
+        let viewController = presenter.didSelectRowAt(at:indexPath)
+        navigationController?.pushViewController(viewController, animated: true)
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -334,35 +242,15 @@ extension CreateTrackerViewController: UITableViewDelegate {
     }
 }
 
-//MARK: - TrackerCategoryViewControllerDelegate
-
-extension CreateTrackerViewController: TrackerCategoryViewControllerDelegate {
-    func didSelect(category: TrackerCategory?) {
-        selectedCategory = category
-        createButton.set(isEnabled: isFormValid)
-        optionsTableView.reloadData()
-    }
-}
-
-//MARK: - TrackerScheduleViewControllerDelegate
-
-extension CreateTrackerViewController: TrackerScheduleViewControllerDelegate {
-    func didSelect(_ activeDays: [WeekDay]) {
-        self.activeDays = activeDays
-        createButton.set(isEnabled: isFormValid)
-        optionsTableView.reloadData()
-    }
-}
-
 //MARK: - UICollectionViewDataSource
 
 extension CreateTrackerViewController: UICollectionViewDataSource {
     func numberOfSections(in collectionView: UICollectionView) -> Int {
-        1
+        presenter.numberOfSections()
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        collectionView == emojiCollectionView ? emojis.count : colors.count
+        collectionView == emojiCollectionView ? presenter.emojis.count : presenter.colors.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -372,7 +260,7 @@ extension CreateTrackerViewController: UICollectionViewDataSource {
             for: indexPath) as? EmojiCollectionViewCell
         {
             emojiCell.prepareForReuse()
-            emojiCell.configure(with: .init(emoji: emojis[indexPath.row]))
+            emojiCell.configure(with: .init(emoji: presenter.emojis[indexPath.row]))
            
             return emojiCell
         } else {
@@ -380,8 +268,8 @@ extension CreateTrackerViewController: UICollectionViewDataSource {
                 withReuseIdentifier: ColorCollectionViewCell.reuseIdentifier,
                 for: indexPath) as? ColorCollectionViewCell else { return UICollectionViewCell() }
             colorCell.prepareForReuse()
-            let color = colors[indexPath.row]
-            colorCell.configure(with: .init(color: UIColor(hex: color) ?? .clear, isSelected: color == selectedColor))
+            let color = presenter.colors[indexPath.row]
+            colorCell.configure(with: .init(color: UIColor(hex: color) ?? .clear))
             
             return colorCell
         }
@@ -390,16 +278,14 @@ extension CreateTrackerViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         if collectionView == emojiCollectionView,
            let emojiCell = collectionView.cellForItem(at: indexPath) as? EmojiCollectionViewCell {
-            selectedEmoji = emojis[indexPath.row]
+            presenter.didSelectItemAt(at: indexPath, isEmoji: true)
             emojiCell.set(isActive: true)
         } else {
             guard let colorCell = collectionView.cellForItem(at: indexPath) as? ColorCollectionViewCell
             else { return }
-            
-            selectedColor = colors[indexPath.row]
+            presenter.didSelectItemAt(at: indexPath, isEmoji: false)
             colorCell.set(isActive: true)
         }
-        createButton.set(isEnabled: isFormValid)
     }
     
     func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
@@ -455,5 +341,17 @@ extension CreateTrackerViewController: UICollectionViewDelegateFlowLayout {
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
         collectionInsets
+    }
+}
+
+//MARK: - CreateTrackerViewControllerProtocol
+
+extension CreateTrackerViewController: CreateTrackerViewControllerProtocol {    
+    func updateCreateButtonState(isEnabled: Bool) {
+        createButton.set(isEnabled: isEnabled)
+    }
+    
+    func reloadData() {
+        optionsTableView.reloadData()
     }
 }

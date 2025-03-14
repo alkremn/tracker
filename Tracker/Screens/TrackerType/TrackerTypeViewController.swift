@@ -68,14 +68,18 @@ final class TrackerTypeViewController: UIViewController {
     
     @objc private func habitButtonDidTap() {
         let navigationVC = UINavigationController()
-        let createHabitVC = CreateTrackerViewController(trackerType: .habit, completion: completion)
+        let createHabitPresenter = CreateTrackerPresenter(trackerType: .habit, completion: completion)
+        let createHabitVC = CreateTrackerViewController(presenter: createHabitPresenter, trackerType: .habit)
+        createHabitPresenter.view = createHabitVC
         navigationVC.viewControllers = [createHabitVC]
         present(navigationVC, animated: true)
     }
     
     @objc private func eventButtonDidTap() {
         let navigationVC = UINavigationController()
-        let createEventVC = CreateTrackerViewController(trackerType: .event, completion: completion)
+        let createEventPresenter = CreateTrackerPresenter(trackerType: .event, completion: completion)
+        let createEventVC = CreateTrackerViewController(presenter: createEventPresenter, trackerType: .event)
+        createEventPresenter.view = createEventVC
         navigationVC.viewControllers = [createEventVC]
         present(navigationVC, animated: true)
     }
